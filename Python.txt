@@ -1,0 +1,69 @@
+        #f61["C9"] = self.addValue("RECEIVED")
+        if transactionStatus != "":
+            f61["C9"] = self.addValue(transactionStatus)
+
+        f61_E0 = {}
+        #f61_E0["C0"] = self.addValue("RQ00000")
+        #f61_E0["C1"] = self.addValue(self.str_to_hex("Запрос обработан успешно"), True)
+        if error == 0:
+            if transactionStatus == "CANCELLED":
+                f61_E0["C0"] = self.addValue("RQ99999")
+                f61_E0["C1"] = self.addValue(self.str_to_hex("Ошибка оплаты"), True)
+            
+            if refundStatus == "DECLINED":
+                f61_E0["C1"] = self.addValue(self.str_to_hex("Ошибка возврата"), True)
+
+        f61_E1 = {}
+        if refundStatus != "":
+            f61_E1["C4"] = self.addValue(refundStatus)
+
+        f61_E2 = {}
+        if isReconcilation == 1:
+            f61_E2["C0"] = self.addValue(requestData["61.E2.C0"])
+            f61_E2["C1"] = self.addValue(requestData["61.E2.C1"])
+            # SBP
+            f61_E2_E0 = {}
+            f61_E2_E0_E0 = {}
+            f61_E2_E0_E0["C0"] = self.addValue(self.amountToSigedDecimal(23.00), True)
+            f61_E2_E0_E0["C1"] = self.addValue(self.countToBcd(1), True)
+            f61_E2_E0["E0"] = self.addValue(self.SbpBertlv_encode(f61_E2_E0_E0), True)
+            f61_E2_E0_E1 = {}
+            f61_E2_E0_E1["C0"] = self.addValue(self.amountToSigedDecimal(-22.00), True)
+            f61_E2_E0_E1["C1"] = self.addValue(self.countToBcd(1), True)
+            f61_E2_E0["E1"] = self.addValue(self.SbpBertlv_encode(f61_E2_E0_E1), True)
+            # Totals
+            f61_E2_E0_E2 = {}
+            f61_E2_E0_E2["C0"] = self.addValue(self.amountToSigedDecimal(1.00), True)
+            f61_E2_E0_E2["C1"] = self.addValue(self.countToBcd(2), True)
+            f61_E2_E0["E2"] = self.addValue(self.SbpBertlv_encode(f61_E2_E0_E2), True)
+            f61_E2["E0"] = self.addValue(self.SbpBertlv_encode(f61_E2_E0), True)
+            # Card
+            f61_E2_E1 = {}
+            f61_E2_E1_E0 = {}
+            f61_E2_E1_E0["C0"] = self.addValue(self.amountToSigedDecimal(0), True)
+            f61_E2_E1_E0["C1"] = self.addValue(self.countToBcd(0), True)
+            f61_E2_E1["E0"] = self.addValue(self.SbpBertlv_encode(f61_E2_E1_E0), True)
+            f61_E2_E1_E1 = {}
+            f61_E2_E1_E1["C0"] = self.addValue(self.amountToSigedDecimal(0), True)
+            f61_E2_E1_E1["C1"] = self.addValue(self.countToBcd(0), True)
+            f61_E2_E1["E1"] = self.addValue(self.SbpBertlv_encode(f61_E2_E1_E1), True)
+            # Totals
+            f61_E2_E1_E2 = {}
+            f61_E2_E1_E2["C0"] = self.addValue(self.amountToSigedDecimal(0), True)
+            f61_E2_E1_E2["C1"] = self.addValue(self.countToBcd(0), True)
+            f61_E2_E1["E2"] = self.addValue(self.SbpBertlv_encode(f61_E2_E1_E2), True)
+            f61_E2["E1"] = self.addValue(self.SbpBertlv_encode(f61_E2_E1), True)
+
+        # Данные вложеных тегов в 61
+        # Данные тега E0
+        if len(f61_E0) > 0:
+            f61["E0"] = self.addValue(self.SbpBertlv_encode(f61_E0), True)
+        
+        # Данные тега E1
+        if len(f61_E1) > 0:
+            f61["E1"] = self.addValue(self.SbpBertlv_encode(f61_E1), True)
+            
+        # Данные тега E2
+        if len(f61_E2) > 0:
+            print(f61_E2)
+            f61["E2"] = self.addValue(self.SbpBertlv_encode(f61_E2), True)
